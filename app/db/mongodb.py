@@ -1,4 +1,5 @@
 import logging
+
 from bson import json_util
 from motor.motor_asyncio import AsyncIOMotorClient
 from typing import Any, Dict, Optional, List, Tuple
@@ -8,12 +9,12 @@ from app.config.settings import Config
 logger = logging.getLogger(__name__)
 
 
-class MongoWrapper:
+class MongoDB:
     _client: Optional[AsyncIOMotorClient] = None
     _db = None
 
     @classmethod
-    def connect(cls):
+    async def init(cls):
         if not cls._client:
             mongo_uri = Config.MONGO_URI
             cls._client = AsyncIOMotorClient(mongo_uri)
@@ -21,9 +22,17 @@ class MongoWrapper:
             logger.info("MongoDB connected successfully.")
 
     @classmethod
+    async def close(cls):
+        if cls._client:
+            cls._client.close()
+            cls._client = None
+            cls._db = None
+            logger.info("MongoDB connection closed.")
+
+    @classmethod
     def get_db(cls):
         if not cls._db:
-            cls.connect()
+            raise RuntimeError("MongoDB not initialized. Call init() first.")
         return cls._db
 
 
