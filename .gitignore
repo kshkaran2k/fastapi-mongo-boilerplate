@@ -96,3 +96,6 @@ coverage.xml
 *.seed
 *.pid.lock
 .envrc
+
+# Logs
+logs/

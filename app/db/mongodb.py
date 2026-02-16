@@ -1,12 +1,11 @@
-import logging
-
 from bson import json_util
 from motor.motor_asyncio import AsyncIOMotorClient
 from typing import Any, Dict, Optional, List, Tuple
 
 from app.config.settings import Config
+from app.core.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class MongoDB:
