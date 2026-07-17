@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from pathlib import Path
 
 from app.core.logger import setup_logging, get_logger
+from app.core.middleware import RequestIDMiddleware
 from app.db.mongodb import MongoDB
 from app.schemas.response import APIResponse, failure_response, success_response
 
@@ -24,6 +25,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="FastAPI Mongo Boilerplate", lifespan=lifespan)
+app.add_middleware(RequestIDMiddleware)
 
 
 @app.exception_handler(HTTPException)

@@ -1,5 +1,5 @@
 from bson import json_util
-from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo import AsyncMongoClient
 from typing import Any, Dict, Optional, List, Tuple
 
 from app.config.settings import Config
@@ -9,28 +9,28 @@ logger = get_logger(__name__)
 
 
 class MongoDB:
-    _client: Optional[AsyncIOMotorClient] = None
+    _client: Optional[AsyncMongoClient] = None
     _db = None
 
     @classmethod
     async def init(cls):
         if not cls._client:
             mongo_uri = Config.MONGO_URI
-            cls._client = AsyncIOMotorClient(mongo_uri)
+            cls._client = AsyncMongoClient(mongo_uri)
             cls._db = cls._client.get_default_database()
             logger.info("MongoDB connected successfully.")
 
     @classmethod
     async def close(cls):
         if cls._client:
-            cls._client.close()
+            await cls._client.close()
             cls._client = None
             cls._db = None
             logger.info("MongoDB connection closed.")
 
     @classmethod
     def get_db(cls):
-        if not cls._db:
+        if cls._db is None:
             raise RuntimeError("MongoDB not initialized. Call init() first.")
         return cls._db
 
@@ -114,7 +114,7 @@ class MongoDB:
     async def aggregate(cls, collection_name: str, pipeline: List[Dict[str, Any]]) -> Tuple[bool, List[Any]]:
         try:
             col = cls.get_db()[collection_name]
-            cursor = col.aggregate(pipeline)
+            cursor = await col.aggregate(pipeline)
             docs = await cursor.to_list(length=None)
             return True, json_util.loads(json_util.dumps(docs))
         except Exception as ex:

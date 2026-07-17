@@ -10,7 +10,6 @@ def setup_logging(log_file: Optional[str] = None) -> None:
     """Configure structured JSON logging using structlog with daily rotation."""
 
     logging.getLogger("pymongo").setLevel(logging.WARNING)
-    logging.getLogger("motor").setLevel(logging.WARNING)
 
     structlog.configure(
         processors=[
