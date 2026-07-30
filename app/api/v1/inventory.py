@@ -1,16 +1,17 @@
 from datetime import datetime, timezone
 from fastapi import APIRouter
 
+from app.core.constants import INVENTORY_COLLECTION, INVENTORY_PREFIX, INVENTORY_TAG
 from app.db.mongodb import MongoDB
 from app.schemas.inventory import InventoryAdjust
 from app.schemas.response import APIResponse, failure_response, success_response
 
-router = APIRouter(prefix="/api/v1/inventory", tags=["inventory"])
+router = APIRouter(prefix=INVENTORY_PREFIX, tags=[INVENTORY_TAG])
 
 
 @router.get("/{sku}", response_model=APIResponse)
 async def get_inventory(sku: str):
-    ok, item = await MongoDB.find_one("inventory", {"sku": sku})
+    ok, item = await MongoDB.find_one(INVENTORY_COLLECTION, {"sku": sku})
     if not ok:
         return await failure_response(status_code=400, message="Inventory not found")
     return await success_response(message="Inventory fetched", data=item)
@@ -20,7 +21,7 @@ async def get_inventory(sku: str):
 async def adjust_inventory(payload: InventoryAdjust):
     now = datetime.now(timezone.utc).isoformat()
     ok, _ = await MongoDB.increment(
-        "inventory",
+        INVENTORY_COLLECTION,
         {"sku": payload.sku},
         {"available": payload.delta},
         set_data={"updated_at": now},
@@ -28,5 +29,5 @@ async def adjust_inventory(payload: InventoryAdjust):
     )
     if not ok:
         return await failure_response(status_code=500, message="Failed to adjust inventory")
-    _, item = await MongoDB.find_one("inventory", {"sku": payload.sku})
+    _, item = await MongoDB.find_one(INVENTORY_COLLECTION, {"sku": payload.sku})
     return await success_response(message="Inventory adjusted", data=item)

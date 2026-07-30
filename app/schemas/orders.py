@@ -1,6 +1,13 @@
+from enum import Enum
 from typing import List
 
 from pydantic import BaseModel, Field
+
+
+class OrderStatus(str, Enum):
+    PENDING = "PENDING"
+    CONFIRMED = "CONFIRMED"
+    CANCELLED = "CANCELLED"
 
 
 class OrderItem(BaseModel):
