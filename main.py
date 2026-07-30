@@ -4,6 +4,8 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pathlib import Path
 
+from app.api.v1.inventory import router as inventory_router
+from app.api.v1.orders import router as orders_router
 from app.core.logger import setup_logging, get_logger
 from app.core.middleware import RequestIDMiddleware
 from app.db.mongodb import MongoDB
@@ -26,6 +28,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="FastAPI Mongo Boilerplate", lifespan=lifespan)
 app.add_middleware(RequestIDMiddleware)
+app.include_router(orders_router)
+app.include_router(inventory_router)
 
 
 @app.exception_handler(HTTPException)

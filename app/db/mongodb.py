@@ -71,6 +71,29 @@ class MongoDB:
             return False, []
 
     @classmethod
+    async def insert_one(cls, collection_name: str, document: Dict[str, Any]) -> Tuple[bool, Any]:
+        try:
+            col = cls.get_db()[collection_name]
+            result = await col.insert_one(document)
+            return True, str(result.inserted_id)
+        except Exception as ex:
+            logger.exception(f"insert_one failed: {ex}")
+            return False, None
+
+    @classmethod
+    async def increment(cls, collection_name: str, filter_condition: Dict[str, Any], inc_data: Dict[str, Any], set_data: Optional[Dict[str, Any]] = None, upsert: bool = False) -> Tuple[bool, Any]:
+        try:
+            col = cls.get_db()[collection_name]
+            update_doc: Dict[str, Any] = {"$inc": inc_data}
+            if set_data:
+                update_doc["$set"] = set_data
+            result = await col.update_one(filter_condition, update_doc, upsert=upsert)
+            return True, result.raw_result
+        except Exception as ex:
+            logger.exception(f"increment failed: {ex}")
+            return False, None
+
+    @classmethod
     async def update_one(cls, collection_name: str, filter_condition: Dict[str, Any], update_data: Dict[str, Any]) -> Tuple[bool, Any]:
         try:
             col = cls.get_db()[collection_name]
